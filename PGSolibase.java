@@ -14,16 +14,16 @@ public class PGSolibase {
 
 	// lock in case an other process wants to upgrade
 	st.executeQuery("select pg_advisory_lock(1)");
-	int n  = getDBVersion(db, schema);
+	int n = getDBVersion(db, schema);
 	System.out.println("current db version : "+n);
 	File f = dbFile(directory, n+1);
 	while(f.exists()) {
 	    upgradeStep(db, f, n+1);
 	    // commit then relock to continue from the last version (in case a process took the lock
-	    db.commit();
 	    System.out.println("commit");
+	    db.commit();
 	    st.executeQuery("select pg_advisory_lock(1)");
-	    n  = getDBVersion(db, schema);
+	    n = getDBVersion(db, schema);
 	    f = dbFile(directory, n+1);
 	}
 	st.close();
