@@ -15,12 +15,12 @@ public class PGSolibase {
 	// lock in case an other process wants to upgrade
 	st.executeQuery("select pg_advisory_xact_lock(1)");
 	int n = getDBVersion(db, schema);
-	System.out.println("current db version : "+n);
+	System.out.println("=== current db version : " + n + " ===");
 	File f = dbFile(directory, n+1);
 	while(f.exists()) {
 	    upgradeStep(db, f, n+1);
 	    // commit then relock to continue from the last version (in case a process took the lock
-	    System.out.println("commit");
+	    System.out.println("sql> commit");
 	    db.commit();
 	    st.executeQuery("select pg_advisory_xact_lock(1)");
 	    n = getDBVersion(db, schema);
@@ -35,15 +35,13 @@ public class PGSolibase {
     }
 
     private static void upgradeStep(Connection db, File f, int n) throws SQLException, IOException {
-	System.out.println("upgrading schema to version "+n);
+	System.out.println(">>> upgrading schema to version " + n);
 
 	// step from file
 	Path filePath = Path.of(f.getAbsolutePath());
 	String content = Files.readString(filePath);
 	var stf = db.createStatement();
-	System.out.println("sql:");
-	System.out.print(content);
-	System.out.println("-----");
+	System.out.print("sql> " + content);
 	stf.execute(content);
 	stf.close();
 
