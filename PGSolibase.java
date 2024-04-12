@@ -13,6 +13,7 @@ public class PGSolibase {
 	var st = db.createStatement();
 
 	// lock in case an other process wants to upgrade
+	st.execute("begin");
 	st.executeQuery("select pg_advisory_xact_lock(1)");
 	int n = getDBVersion(db, schema);
 	System.out.println("=== current db version : " + n + " ===");
@@ -22,6 +23,7 @@ public class PGSolibase {
 	    // commit then relock to continue from the last version (in case a process took the lock
 	    System.out.println("sql> commit");
 	    db.commit();
+	    st.execute("begin");
 	    st.executeQuery("select pg_advisory_xact_lock(1)");
 	    n = getDBVersion(db, schema);
 	    f = dbFile(directory, n+1);
